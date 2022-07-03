@@ -13,6 +13,7 @@ import base64
 # admin bot in your channel                                                                                   #
 # then change bot_id and channel_id and channel_username (359 to 361)                                         #
 # if you don't want to check user is in channel or not, change this 67 line to command and change 314 to pass #
+# you can change راجع به ربات text at line 137                                                                #
 #                                                                                                             #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                                             #
@@ -22,9 +23,36 @@ import base64
 #                                                                                                             #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-token = '864497393:AAFokp3ULOcra0iqjJW7-toBDIUZTM3lwbc'
-ApiKey = 12725772
-ApiHash = '201b6969c079a9a655b00e7127d359b6'
+token = 'your bot token'
+ApiKey = 11111111
+ApiHash = 'your api hash'
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # TOP SECRET # # # # # # # # # # # # # # # # # # # # # # # # # # #  
+
+def encrypt(message):
+    cipher = ''
+    for letter in message:
+        if letter == ' ':
+            cipher += ' '
+        elif letter == 'z':
+            cipher += 'a'
+        else:
+            cipher += chr(ord(letter) + 1)
+    return cipher
+
+def decrypt(cipher):
+    message = ''
+    for letter in cipher:
+        if letter == ' ':
+            message += ' '
+        elif letter == 'a':
+            message += 'z'
+        else:
+            message += chr(ord(letter) - 1)
+    return message
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # TOP SECRET # # # # # # # # # # # # # # # # # # # # # # # # # # #  
 
 app = Client('unknown caht bot', bot_token = token, api_id = ApiKey, api_hash = ApiHash)
 r = redis.Redis(host='localhost', port=6379, db=0)
@@ -49,7 +77,7 @@ async def main(client, message):
         pass
 
 
-    encode = base64.b64encode(b'%i' % chat_id).decode('utf-8')
+    encode = encrypt(base64.b64encode(str.encode(str(chat_id))).decode('utf-8'))
     cur.execute(f'SELECT messages FROM users WHERE user_id = "{encode}"')
     if cur.fetchall() == []:
         cur.execute(f'INSERT OR IGNORE INTO users VALUES("{encode}", " ", ", ")')
@@ -66,12 +94,12 @@ async def main(client, message):
                 if str(chat_id) in blocked:
                     await app.send_message(chat_id, 'متاسفانه کاربر مورد نظر شما رو بلاک کرده☹️')
 
-                elif base64.b64encode(b'%i' % chat_id).decode('utf-8') == li[1]:
+                elif encrypt(base64.b64encode(str.encode(str(chat_id))).decode('utf-8')) == li[1]:
                     await app.send_message(chat_id, 'شما نمیتونید به خودتون پیام بفرستید🤔')
                 
                 else:
 
-                    about_user = await app.get_chat(base64.b64decode(li[1]).decode('utf-8'))
+                    about_user = await app.get_chat(base64.b64decode(decrypt(li[1])).decode('utf-8'))
                     await app.send_message(chat_id, f'شما در حال ارسال پیام ناشناس به {about_user.first_name} هستی.\n\nمی‌تونی هر حرف یا انتقادی که تو دلت هست رو بگی چون پیامت به صورت کاملا ناشناس ارسال می‌شه!', reply_markup=ReplyKeyboardMarkup(
                         [
                             ['انصراف']
@@ -92,7 +120,7 @@ async def main(client, message):
 
                 await app.send_message(chat_id, 'پروسه ارسال پیام همگانی با موفقیت آغاز شد')
                 for user in users:
-                    user_ = base64.b64decode(user[0]).decode('utf-8')
+                    user_ = base64.b64decode(decrypt(user[0])).decode('utf-8')
                     await app.copy_message(user_, chat_id, message_id)
 
                 del panel_stat[chat_id]
@@ -101,24 +129,28 @@ async def main(client, message):
         elif text == '/start':
             await app.send_message(chat_id, 'به ربات پیام ناشناس خوش آمدید.\n\nچه کاری برات انجام بدم؟🤔', reply_markup = ReplyKeyboardMarkup(
                 [
-                    ['دریافت لینک ناشناس📨']
+                    ['دریافت لینک ناشناس📨', 'راجع به ربات']
                 ], resize_keyboard = True
             ))
 
+        elif text == 'راجع به ربات':
+            await app.send_message(chat_id, 'Github : [iliyafaramarzi](https://github.com/iliyafaramarzi)\nTelegram : @iliyafaramarzi\nInstagram : [faramarziiliya](https://www.instagram.com/faramarziiliya/)')
+
         elif text == 'دریافت لینک ناشناس📨':
-            encode = base64.b64encode(b'%i' % chat_id).decode('utf-8')
+            encode = encrypt(base64.b64encode(str.encode(str(chat_id))).decode('utf-8'))
             await app.send_message(chat_id, f'سلام {message.from_user.first_name} هستم ✋️\n\nینک زیر رو لمس کن و هر حرفی که تو دلت هست یا هر انتقادی که نسبت به من داری رو با خیال راحت بنویس و بفرست. بدون اینکه از اسمت باخبر بشم پیامت به من می‌رسه. خودتم می‌تونی امتحان کنی و از بقیه بخوای راحت و ناشناس بهت پیام بفرستن، حرفای خیلی جالبی می‌شنوی! 😉\n\n[لینک ناشناس](t.me/{bot_id}?start={encode})')
             
         elif text == '/new':
-            encode = base64.b64encode(b'%i' % chat_id).decode('utf-8')
+            encode = encrypt(base64.b64encode(str.encode(str(chat_id))).decode('utf-8'))
             cur.execute(f'SELECT messages FROM users WHERE user_id = "{encode}"')
             messages = cur.fetchall()[0][0]
             if messages.strip() == '':
-                await app.send_message(chat_id, 'متاسفانه شما هیچ پیام جدیدی ندارید☹️\n\nمیتونی با استفاده از دکمه زیر لینک ناشناستو بدی به بقیه تا برات پیام بفرستن👇', reply_markup = ReplyKeyboardMarkup(
+                await app.send_message(chat_id, 'به ربات پیام ناشناس خوش آمدید.\n\nچه کاری برات انجام بدم؟🤔', reply_markup = ReplyKeyboardMarkup(
                 [
-                    ['دریافت لینک ناشناس📨']
+                    ['دریافت لینک ناشناس📨', 'راجع به ربات']
                 ], resize_keyboard = True
                 ))
+
             else:
                 messagess = messages.split('|#')
                 for counter, i in enumerate(messagess[1:]):
@@ -206,11 +238,12 @@ async def main(client, message):
                     con.commit()
 
         elif r.exists(f'{user_id}') and text == 'انصراف':
-            await app.send_message(chat_id, 'پروسه ارسال پیام با موفقیت متوقف شد✅', reply_markup = ReplyKeyboardMarkup(
+            await app.send_message(chat_id, 'به ربات پیام ناشناس خوش آمدید.\n\nچه کاری برات انجام بدم؟🤔', reply_markup = ReplyKeyboardMarkup(
                 [
-                    ['دریافت لینک ناشناس📨']
+                    ['دریافت لینک ناشناس📨', 'راجع به ربات']
                 ], resize_keyboard = True
             ))
+
             r.delete(f'{user_id}')
             
         elif r.exists(f'{user_id}') and text != 'انصراف' and text != '/start' and text != '/new':
@@ -256,8 +289,7 @@ async def main(client, message):
                     if text == None:
                         text = ""
 
-                    a = base64.b64encode(b'%i' % int(mode[1])).decode('utf-8')
-                    cur.execute(f'SELECT blocked_users FROM users WHERE user_id = "{a}"')
+                    cur.execute(f'SELECT blocked_users FROM users WHERE user_id = "{mode[1]}"')
                     blocked = cur.fetchall()[0][0]
                     if str(chat_id) in blocked:
                         await app.send_message(chat_id, 'متاسفانه کاربر مورد نظر شما رو بلاک کرده☹️')
@@ -271,30 +303,29 @@ async def main(client, message):
                                 messages += f'|#{text}+-+{chat_id}+-+{message_id}+-+{file_id}+-+{file_type}'
                             cur.execute(f'UPDATE users SET messages = "{messages}" WHERE user_id = "{mode[1]}"')
                             con.commit()
-                            await app.send_message(int(base64.b64decode(mode[1]).decode('utf-8')), 'شما یک پیام جدید دارید!\n\nبرای دیدن پیام های جدید از دستور /new استفاده کنید.')
+                            await app.send_message(int(base64.b64decode(decrypt(mode[1])).decode('utf-8')), 'شما یک پیام جدید دارید!\n\nبرای دیدن پیام های جدید از دستور /new استفاده کنید.')
                             r.delete(f'{user_id}')
-                            await app.send_message(chat_id, 'پیام شما با موفقیت برای مخابطتون ارسال شد✅', reply_markup = ReplyKeyboardMarkup(
-                                [
-                                    ['دریافت لینک ناشناس📨']
-                                ], resize_keyboard = True
+                            await app.send_message(chat_id, 'به ربات پیام ناشناس خوش آمدید.\n\nچه کاری برات انجام بدم؟🤔', reply_markup = ReplyKeyboardMarkup(
+                            [
+                                ['دریافت لینک ناشناس📨', 'راجع به ربات']
+                            ], resize_keyboard = True
                             ))
 
                         elif str(mode[0]) == "reply":
-                            mode_ = base64.b64encode(b'%i' % int(mode[1])).decode('utf-8')
-                            cur.execute(f'SELECT messages FROM users WHERE user_id = "{mode_}"')
+                            cur.execute(f'SELECT messages FROM users WHERE user_id = "{mode[1]}"')
                             messages = cur.fetchall()[0][0]
                             if file_id == '':
                                 messages += f'|#{text}+-+{chat_id}+-+{message_id}'
                             else:
                                 messages += f'|#{text}+-+{chat_id}+-+{message_id}+-+{file_id}+-+{file_type}'
-                            cur.execute(f'UPDATE users SET messages = "{messages}" WHERE user_id = "{mode_}"')
+                            cur.execute(f'UPDATE users SET messages = "{messages}" WHERE user_id = "{mode[1]}"')
                             con.commit()
-                            await app.send_message(int(mode[1]), 'شما یک پیام جدید دارید!\n\nبرای دیدن پیام های جدید از دستور /new استفاده کنید.', reply_to_message_id = int(mode[2]))
+                            await app.send_message(int(base64.b64decode(decrypt(mode[1])).decode('utf-8')), 'شما یک پیام جدید دارید!\n\nبرای دیدن پیام های جدید از دستور /new استفاده کنید.', reply_to_message_id = int(mode[2]))
                             r.delete(f'{user_id}')
-                            await app.send_message(chat_id, 'پیام شما با موفقیت برای مخابطتون ارسال شد✅', reply_markup = ReplyKeyboardMarkup(
-                                [
-                                    ['دریافت لینک ناشناس📨']
-                                ], resize_keyboard = True
+                            await app.send_message(chat_id, 'به ربات پیام ناشناس خوش آمدید.\n\nچه کاری برات انجام بدم؟🤔', reply_markup = ReplyKeyboardMarkup(
+                            [
+                                ['دریافت لینک ناشناس📨', 'راجع به ربات']
+                            ], resize_keyboard = True
                             ))
 
             except UserIsBlocked:
@@ -307,7 +338,6 @@ async def main(client, message):
         await app.send_message(chat_id, f'برای کار کردن با ربات ابتدا در چنل زیر جوین شید: \n\n{channel_username}')
 
 
-
 @app.on_callback_query()
 async def main(client, callback_query):
     chat_id = callback_query.message.chat.id
@@ -317,7 +347,7 @@ async def main(client, callback_query):
     li = data.split('-')
 
     if li[0] == 'reply':
-        encode = base64.b64encode(b'%i' % chat_id).decode('utf-8')
+        encode = encrypt(base64.b64encode(str.encode(str(chat_id))).decode('utf-8'))
         cur.execute(f'SELECT blocked_users FROM users WHERE user_id = "{encode}"')
         blocked = cur.fetchall()[0][0]
 
@@ -330,10 +360,12 @@ async def main(client, callback_query):
                     ['انصراف']
                 ], resize_keyboard = True
             ))
-            r.set(f'{user_id}', f'reply-{li[1]}-{li[2]}')
+
+            a = encrypt(base64.b64encode(str.encode(str(li[1]))).decode('utf-8'))
+            r.set(f'{user_id}', f'reply-{a}-{li[2]}')
 
     elif li[0] == 'block':
-        encode = base64.b64encode(b'%i' % chat_id).decode('utf-8')
+        encode = encode = encrypt(base64.b64encode(str.encode(str(chat_id))).decode('utf-8'))
         cur.execute(f'SELECT blocked_users FROM users WHERE user_id = "{encode}"')
         blocked = cur.fetchall()[0][0]
 
