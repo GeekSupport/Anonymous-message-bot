@@ -2,7 +2,7 @@
 With this bot you can recivie messages anonymous\
 ## Options
 - you can send texts, voice, music, picture, gif, sticker 
-- you can send message to all members with "پیام همگانی 123258" command
+- admin panel (read code for more help)
 - you can block and unblock users
 
 ## Updates
