@@ -1,5 +1,5 @@
 # Anonymous-message-bot
-With this bot you can recivie messages anonymous\
+With this bot you can recivie messages anonymous
 ## Options
 - you can send texts, voice, music, picture, gif, sticker 
 - admin panel (read code for more help)
