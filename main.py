@@ -6,6 +6,7 @@ import sqlite3
 from pyrogram.errors import UserIsBlocked, UserNotParticipant
 from pyrogram import enums
 import base64
+import asyncio
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                                             # 
@@ -14,6 +15,7 @@ import base64
 # then change bot_id and channel_id and channel_username (359 to 361)                                         #
 # if you don't want to check user is in channel or not, change this 67 line to command and change 314 to pass #
 # you can change راجع به ربات text at line 137                                                                #
+# if you want to change Pass and login text, change 117 and 163 lines                                         #
 #                                                                                                             #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                                             #
@@ -24,7 +26,7 @@ import base64
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 token = 'your bot token'
-ApiKey = 11111111
+ApiKey = 1111111111
 ApiHash = 'your api hash'
 
 
@@ -109,29 +111,58 @@ async def main(client, message):
                 
                 return ''
 
-            elif len(li) == 3 and li[0] == 'پیام' and li[1] == 'همگانی' and li[2] == '123258':
-                panel_stat[chat_id] = 'message'
-                await app.send_message(chat_id, 'لطفا پیام خود را ارسال کنید:')
 
-        if panel_stat != {}:
-            if panel_stat[chat_id] == 'message' and text != 'پیام همگانی 123258':
-                cur.execute(f'SELECT user_id FROM users')
-                users = cur.fetchall()
+        if panel_stat != {} and chat_id in panel_stat:
+            if panel_stat[chat_id] == 'password':
+                if text == '0123':
+                    await app.send_message(chat_id, 'به پنل ادمین خوش آمدید', reply_markup=ReplyKeyboardMarkup(
+                        [
+                            ['پیام همگانی'] ,['خروج']
+                        ], resize_keyboard=True, placeholder='admin panel'
+                    ))
+                    panel_stat[chat_id] = 'panel'
+                else:
+                    await app.send_message(chat_id, 'رمز اشتباه است لطفا دوباره تلاش کنید')
+                    del panel_stat[chat_id]
+            
+            elif panel_stat[chat_id] == 'panel' and text == 'پیام همگانی':
+                panel_stat[chat_id] = 'send_message'
+                await app.send_message(chat_id, 'لطفا پیامی که میخواید ارسال شه را بنویسید👇\nبرای کنسل کردن از دستور "cancel" استفاده کنید.')
 
-                await app.send_message(chat_id, 'پروسه ارسال پیام همگانی با موفقیت آغاز شد')
-                for user in users:
-                    user_ = base64.b64decode(decrypt(user[0])).decode('utf-8')
-                    await app.copy_message(user_, chat_id, message_id)
+            elif panel_stat[chat_id] == 'send_message':
+                if text != 'cancel':
+                    cur.execute(f'SELECT user_id FROM users')
+                    users = cur.fetchall()
+                    for counter, user in enumerate(users):
+                        await app.send_message(int(base64.b64decode(decrypt(user[0])).decode('utf-8')), text)
+                        if counter % 10 == 0:
+                            await asyncio.sleep(1)
 
+                    await app.send_message(chat_id, 'پیام همگانی با موفقیت ارسال شد✅')
+                    panel_stat[chat_id] = 'panel'
+                else:
+                    await app.send_message(chat_id, 'ارسال پیام همگانی با موفقیت کنسل شد✅')
+                    panel_stat[chat_id] = 'panel'
+
+            elif panel_stat[chat_id] == 'panel' and text == 'خروج':
                 del panel_stat[chat_id]
-                await app.send_message(chat_id, 'پروسه ارسال پیام همگانی با به اتمام رسید')  
-        
+                await app.send_message(chat_id, 'به ربات پیام ناشناس خوش آمدید.\n\nچه کاری برات انجام بدم؟🤔', reply_markup = ReplyKeyboardMarkup(
+                [
+                    ['دریافت لینک ناشناس📨', 'راجع به ربات']
+                ], resize_keyboard = True
+                ))
+
+
         elif text == '/start':
             await app.send_message(chat_id, 'به ربات پیام ناشناس خوش آمدید.\n\nچه کاری برات انجام بدم؟🤔', reply_markup = ReplyKeyboardMarkup(
                 [
                     ['دریافت لینک ناشناس📨', 'راجع به ربات']
                 ], resize_keyboard = True
             ))
+
+        elif text == 'AdminPanel':
+            panel_stat[chat_id] = 'password'
+            await app.send_message(chat_id, 'لطفا برای ورود به بخش ادمین رمز عبور را وارد کنید:')
 
         elif text == 'راجع به ربات':
             await app.send_message(chat_id, 'Github : [iliyafaramarzi](https://github.com/iliyafaramarzi)\nTelegram : @iliyafaramarzi\nInstagram : [faramarziiliya](https://www.instagram.com/faramarziiliya/)')
@@ -332,7 +363,11 @@ async def main(client, message):
                 await app.send_message(chat_id, 'ظاهرا کاربر مورد نظر ربات رو بلاک کرده☹️\n\nهروقت دوباره وارد ربات بشه حتما پیامت رو میبینه.')
 
         else:
-            await app.send_message(chat_id, 'متوجه نشدم🧐')
+            await app.send_message(chat_id, 'به ربات پیام ناشناس خوش آمدید.\n\nچه کاری برات انجام بدم؟🤔', reply_markup = ReplyKeyboardMarkup(
+            [
+                ['دریافت لینک ناشناس📨', 'راجع به ربات']
+            ], resize_keyboard = True
+            ))
 
     except UserNotParticipant: 
         await app.send_message(chat_id, f'برای کار کردن با ربات ابتدا در چنل زیر جوین شید: \n\n{channel_username}')
