@@ -7,7 +7,7 @@ With this bot you can recivie messages anonymous\
 
 ## Updates
 ### Version 1 
-- basic bot\
+- basic bot
 ### Version 2
 - change id encryption algorithm
 - added about us section
