@@ -5,4 +5,14 @@ With this bot you can recivie messages anonymous\
 - you can send message to all members with "پیام همگانی 123258" command
 - you can block and unblock users
 
+## Updates
+### Version 1 
+- basic bot\
+### Version 2
+- change id encryption algorithm
+- added about us section
+### Version 2.5
+- add admin panel with levels to login into panel
+- Bugs fixed
+
 ### If you need more help messge me on Telegram with [@iliyafaramarzi](https://t.me/iliyaFaramarzi) 
