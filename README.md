@@ -14,5 +14,9 @@ With this bot you can recivie messages anonymous
 ### Version 2.5
 - add admin panel with levels to login into panel
 - Bugs fixed
+### Version 3
+- Update admin panel (added bot info)
+- add crypto file 
+- Bugs fixed
 
 ### If you need more help messge me on Telegram with [@iliyafaramarzi](https://t.me/iliyaFaramarzi) 
