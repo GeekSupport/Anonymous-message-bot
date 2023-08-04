@@ -28,7 +28,7 @@ from datetime import datetime
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 token = 'your bot token'
-ApiKey = 1111111111
+ApiKey = 1111111111 # Your api key
 ApiHash = 'your api hash'
 
 
@@ -68,8 +68,6 @@ async def main(client, message):
 
 
     try:
-        # await app.get_chat_member(int(channel_id), chat_id)
-
         if li != []:
             if li[0] == '/start' and len(li) == 2:
                 cur.execute(f'SELECT blocked_users FROM users WHERE user_id = "{li[1]}"')
